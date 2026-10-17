@@ -4,7 +4,7 @@
 import { useSyncExternalStore } from 'react';
 import { createPublicClient } from '@arkiv-network/sdk';
 import { tiramisu } from '@arkiv-network/sdk/chains';
-import { http } from 'viem';
+import { fallback, http } from 'viem';
 import { DEFAULT_RPC_URL, createTriggers } from 'arkiv-triggers';
 import { forgetWallet, restoreWallet } from './wallet.js';
 import { sameAddr } from './format.js';
@@ -73,7 +73,14 @@ export function useStore(sel = s => s) {
  * (friction #10); without them it fails in about a second, and the store retries on its own schedule. */
 const rpcEnv = import.meta.env.VITE_ARKIV_RPC_URL;
 export const RPC_URL = rpcEnv ? (rpcEnv.startsWith('/') ? location.origin + rpcEnv : rpcEnv) : DEFAULT_RPC_URL;
-const publicClient = createPublicClient({ chain: tiramisu, transport: http(RPC_URL, { retryCount: 0, timeout: 20_000 }) });
+// In the deployed site, reads go to Arkiv directly first; on a 429 (this visitor's anonymous budget is used
+// up) viem's fallback moves to the site's read-only relay, /api/rpc, which adds an access key server side.
+const RELAY = import.meta.env.PROD && import.meta.env.VITE_ARKIV_RELAY !== 'off' ? location.origin + '/api/rpc' : null;
+const direct = http(RPC_URL, { retryCount: 0, timeout: 20_000 });
+const publicClient = createPublicClient({
+  chain: tiramisu,
+  transport: RELAY ? fallback([direct, http(RELAY, { retryCount: 0, timeout: 25_000 })], { retryCount: 0 }) : direct,
+});
 const reader = createTriggers({ app: APP, publicClient });
 let writer = null;
 const isLimit = e => /429|ANON_COST_LIMITED|QUOTA_EXCEEDED|rate-limit/i.test(`${e?.status} ${e?.details} ${e?.message}`);

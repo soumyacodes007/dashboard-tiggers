@@ -48,6 +48,14 @@ No settings are needed. Optional ones are in [.env.example](.env.example).
   Reads fail fast instead of hanging when it runs out (see `arkiv/friction.md` #10 in the main repo), the
   page says so in a banner, and it retries every 30 s.
 
+## Read relay (optional, recommended for the deployed site)
+
+`api/rpc.js` is a Vercel function that relays **read** calls to Arkiv with an access key added on the
+server. The browser always tries Arkiv directly first and falls back to the relay only when Arkiv answers
+429 (that visitor's anonymous budget is used up). Set `ARKIV_ACCESS_KEY` in the Vercel project's
+environment variables (not a `VITE_` variable, which would be shipped to browsers). Writes are refused by
+the relay; wallets always talk to Arkiv themselves. Set `VITE_ARKIV_RELAY=off` to disable the fallback.
+
 ## Kept off Arkiv, on purpose
 
 Rules are public, so nothing secret or personal goes in one. The Telegram chat code is encrypted to one

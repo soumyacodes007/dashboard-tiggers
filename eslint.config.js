@@ -9,5 +9,5 @@ export default [
     languageOptions: { ecmaVersion: 'latest', sourceType: 'module', globals: { ...globals.browser }, parserOptions: { ecmaFeatures: { jsx: true } } },
     rules: { 'no-unused-vars': ['warn', { varsIgnorePattern: '^[A-Z_]' }] },
   },
-  { files: ['vite.config.js', 'eslint.config.js'], languageOptions: { globals: { ...globals.node } } },
+  { files: ['vite.config.js', 'eslint.config.js', 'api/**/*.js'], languageOptions: { globals: { ...globals.node } } },
 ];
