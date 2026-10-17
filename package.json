@@ -4,6 +4,10 @@
   "private": true,
   "description": "The dashboard for Arkiv Triggers: create rules on Arkiv, watch workers fire them, read the receipts.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soumyacodes007/dashboard-tiggers.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,11 +17,11 @@
     "format": "prettier --write ."
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "dependencies": {
     "@arkiv-network/sdk": "0.8.1",
-    "arkiv-triggers": "file:../arkiv-triggers",
+    "arkiv-triggers": "0.1.0",
     "lucide-react": "^0.460.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

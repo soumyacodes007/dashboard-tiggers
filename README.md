@@ -8,8 +8,13 @@ your own wallet. There is no backend: if this site goes down, your rules still f
 
 ## Run it
 
+Use Node 22 or later. The dashboard installs the published `arkiv-triggers@0.1.0` SDK;
+no sibling SDK checkout is required.
+
 ```bash
-npm install
+git clone https://github.com/soumyacodes007/dashboard-tiggers.git
+cd dashboard-tiggers
+npm ci
 npm run dev        # http://localhost:5173
 npm run build      # static site in dist/
 ```
