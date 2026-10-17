@@ -145,6 +145,10 @@ export function RuleEditor() {
     setForm(f => {
       const next = { ...f, ...p };
       if (p.on && Object.values(DEFAULT_MSG).includes(f.message)) next.message = DEFAULT_MSG[p.on];
+      if (p.on === 'block') {
+        if (next.action === 'extend') next.action = 'receipt';
+        next.early = 'none';
+      }
       return next;
     });
   const target = useTarget(form.on === 'expire' ? form.target.trim() : '', nonce);
@@ -276,7 +280,7 @@ await triggers.createRule(${toJson(
         payload: new TextEncoder().encode('A test entity made by the Arkiv Triggers dashboard'),
         contentType: 'text/plain',
         attributes: { type: str('trg.demo'), app: str('triggers-dashboard') },
-        expires: ExpirationTime.fromMinutes(minutes),
+        expires: ExpirationTime.fromSeconds(Math.round(minutes * 60)),
         flags: { permissionlessExtension: true },
       });
       set({ target: res.entityKey, name: form.name || `Test entity · ${minutes} min` });
@@ -463,6 +467,7 @@ await triggers.createRule(${toJson(
                 </div>
               </Field>
             )}
+            {form.on === 'expire' && (
             <Field label="Fire early" hint={deadlineDate ? `→ fires ${when(deadlineDate)}` : form.on === 'expire' ? 'Counted back from the moment the entity expires' : ''}>
               <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
                 <Seg
@@ -485,6 +490,7 @@ await triggers.createRule(${toJson(
                 )}
               </div>
             </Field>
+            )}
           </Step>
 
           <Step n={2} title="Then" ok={thenOk} missing={thenMissing}>
@@ -504,6 +510,8 @@ await triggers.createRule(${toJson(
                     }[a]
                   }
                   onClick={() => set({ action: a })}
+                  disabled={a === 'extend' && form.on !== 'expire'}
+                  why="Extend needs an entity: pick “An entity expires”"
                 />
               ))}
             </div>
@@ -692,9 +700,9 @@ function Menu2({ busy, onPick }) {
           <span className="faint" style={{ fontSize: 12 }}>
             Expires in
           </span>
-          {[3, 10, 60].map(m => (
+          {[1.5, 3, 10].map(m => (
             <button key={m} type="button" className="chipbtn" style={{ height: 22 }} onClick={() => (setOpen(false), onPick(m))}>
-              {m < 60 ? `${m} min` : '1 hour'}
+              {m} min
             </button>
           ))}
         </>

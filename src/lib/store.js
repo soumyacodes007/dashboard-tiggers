@@ -157,7 +157,7 @@ function startWatch() {
   set({ live: 'connecting' });
   stopWatch = reader.watch({
     creator: me,
-    minIntervalMs: 4000,
+    minIntervalMs: 8000,
     onStatus: s => set({ live: s }),
     onRule: r => {
       if (state.rules.some(x => sameAddr(x.key, r.key))) return;

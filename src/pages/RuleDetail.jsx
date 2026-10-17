@@ -1,5 +1,5 @@
 // One rule and everything that happened to it: the audit trail, each delivery, and the raw entity.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { I } from '../ui/icons.jsx';
 import { Addr, Code, Empty, Panel, StateBadge, copy, cx, useNow } from '../ui/kit.jsx';
 import { ActTag, duplicate, resultText, receiptTone } from '../ui/rules.jsx';
@@ -12,6 +12,7 @@ export function RuleDetail({ k }) {
   const [trail, setTrail] = useState(null);
   const [state, setState] = useState('loading');
   const [raw, setRaw] = useState(false);
+  const stateRef = useRef('active');
   useNow(1000);
 
   useEffect(() => {
@@ -26,7 +27,8 @@ export function RuleDetail({ k }) {
         })
         .catch(() => live && setState(s => (s === 'ok' ? s : 'error')));
     load();
-    const t = setInterval(load, 6000);
+    // Claims last 60 s, so poll while the rule is still waiting or firing; afterwards the live feed is enough.
+    const t = setInterval(() => (stateRef.current === 'active' || stateRef.current === 'firing' || stateRef.current === 'waiting') && load(), 10_000);
     return () => {
       live = false;
       clearInterval(t);
@@ -58,6 +60,7 @@ export function RuleDetail({ k }) {
   // Once the target is gone its expiry can't be read, but every receipt records the deadline it fired for.
   const deadline = trail.deadline ?? receipts[0]?.deadline;
   const st = ruleState({ ...rule, status: trail.status, deadline, receipts }, clock);
+  stateRef.current = st;
   const dl = blockTime(deadline, clock);
   const created = blockTime(rule.createdAt, clock);
   const mineRule = wallet && sameAddr(rule.creator, wallet.address);
