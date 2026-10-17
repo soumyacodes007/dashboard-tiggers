@@ -71,7 +71,8 @@ export function useStore(sel = s => s) {
 /** Reads need no wallet; writes use the connected one. A browser cannot hold an access key, so reads use
  * Arkiv's anonymous budget. viem retries are off: with them a 429 waits out Retry-After and looks frozen
  * (friction #10); without them it fails in about a second, and the store retries on its own schedule. */
-export const RPC_URL = import.meta.env.VITE_ARKIV_RPC_URL || DEFAULT_RPC_URL;
+const rpcEnv = import.meta.env.VITE_ARKIV_RPC_URL;
+export const RPC_URL = rpcEnv ? (rpcEnv.startsWith('/') ? location.origin + rpcEnv : rpcEnv) : DEFAULT_RPC_URL;
 const publicClient = createPublicClient({ chain: tiramisu, transport: http(RPC_URL, { retryCount: 0, timeout: 20_000 }) });
 const reader = createTriggers({ app: APP, publicClient });
 let writer = null;

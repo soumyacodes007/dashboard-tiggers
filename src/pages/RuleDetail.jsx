@@ -55,8 +55,10 @@ export function RuleDetail({ k }) {
 
   const rule = trail.rule;
   const receipts = [...trail.receipts, ...liveReceipts.filter(r => sameAddr(r.rule, k) && !trail.receipts.some(x => x.key === r.key))].sort((a, b) => (a.firedAt > b.firedAt ? -1 : 1));
-  const st = ruleState({ ...rule, status: trail.status, deadline: trail.deadline, receipts }, clock);
-  const dl = blockTime(trail.deadline, clock);
+  // Once the target is gone its expiry can't be read, but every receipt records the deadline it fired for.
+  const deadline = trail.deadline ?? receipts[0]?.deadline;
+  const st = ruleState({ ...rule, status: trail.status, deadline, receipts }, clock);
+  const dl = blockTime(deadline, clock);
   const created = blockTime(rule.createdAt, clock);
   const mineRule = wallet && sameAddr(rule.creator, wallet.address);
   const t = rule.trigger;
@@ -164,7 +166,7 @@ export function RuleDetail({ k }) {
                   </span>
                   <div className="grow">
                     <div className="t">{st === 'firing' ? 'Firing…' : st === 'waiting' ? 'Waiting for its target' : 'Scheduled'}</div>
-                    <div className="m">{dl ? `due ${when(dl)} · block ${fmtNum(trail.deadline)}` : 'the target entity is gone; a worker records a skipped receipt'}</div>
+                    <div className="m">{dl ? `due ${when(dl)} · block ${fmtNum(deadline)}` : 'the target entity is gone; a worker records a skipped receipt'}</div>
                   </div>
                 </div>
               )}
@@ -239,7 +241,7 @@ export function RuleDetail({ k }) {
               <dt>Deadline</dt>
               <dd>
                 {dl ? when(dl) : '—'}
-                {trail.deadline != null && <div className="faint mono" style={{ fontSize: 11.5 }}>block {fmtNum(trail.deadline)}</div>}
+                {deadline != null && <div className="faint mono" style={{ fontSize: 11.5 }}>block {fmtNum(deadline)}</div>}
               </dd>
               {t.offset > 0n && (
                 <>
